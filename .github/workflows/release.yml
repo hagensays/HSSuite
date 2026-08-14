@@ -92,34 +92,56 @@ jobs:
           $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  $name-$tag.exe" | Set-Content "artifacts\$name-$tag.exe.sha256" -Encoding ascii
 
-      - name: Create tag and GitHub Release
+      - name: Create and verify release tag
         shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           $tag = '${{ steps.version.outputs.tag }}'
-          $name = '${{ steps.app.outputs.name }}'.Trim()
-          gh release view $tag 2>$null
-          if ($LASTEXITCODE -eq 0) { throw "Release $tag already exists." }
-          gh release create $tag "artifacts\$name-$tag.exe" "artifacts\$name-$tag.zip" "artifacts\$name-$tag.exe.sha256" --target main --title "$name $tag" --notes "Automated HSSuite release from merged PR #${{ github.event.pull_request.number }}."
+          $existing = git ls-remote --tags origin "refs/tags/$tag"
+          if ($existing) { throw "Release tag already exists: $tag" }
+          git tag $tag HEAD
+          if ($LASTEXITCODE -ne 0) { throw "Could not create local release tag: $tag" }
+          git push origin "refs/tags/$tag:refs/tags/$tag"
+          if ($LASTEXITCODE -ne 0) { throw "Could not push release tag: $tag" }
+          $remoteTag = git ls-remote --tags origin "refs/tags/$tag"
+          if (-not $remoteTag) { throw "Release tag was not found on origin after push: $tag" }
 
-      - name: Verify release and assets
+      - name: Create GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = '${{ steps.version.outputs.tag }}'
           $name = '${{ steps.app.outputs.name }}'.Trim()
-          $assets = gh release view $tag --json assets --jq '.assets[].name'
+          gh release create $tag "artifacts\$name-$tag.exe" "artifacts\$name-$tag.zip" "artifacts\$name-$tag.exe.sha256" --verify-tag --title "$name $tag" --notes "Automated HSSuite release from merged PR #${{ github.event.pull_request.number }}."
+          if ($LASTEXITCODE -ne 0) { throw "GitHub Release creation failed for $tag." }
+
+      - name: Verify release, tag and assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ steps.version.outputs.tag }}'
+          $name = '${{ steps.app.outputs.name }}'.Trim()
+          $remoteTag = git ls-remote --tags origin "refs/tags/$tag"
+          if (-not $remoteTag) { throw "Release tag missing during verification: $tag" }
+          $release = gh release view $tag --json tagName,isDraft,assets | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw "GitHub Release is not readable: $tag" }
+          if ($release.tagName -ne $tag) { throw "Release tag mismatch: expected $tag, got $($release.tagName)" }
+          if ($release.isDraft) { throw "Release is still a draft: $tag" }
+          $assetNames = @($release.assets | ForEach-Object { $_.name })
           foreach ($expected in @("$name-$tag.exe", "$name-$tag.zip", "$name-$tag.exe.sha256")) {
-            if ($assets -notcontains $expected) { throw "Release asset missing: $expected" }
+            if ($assetNames -notcontains $expected) { throw "Release asset missing: $expected" }
           }
 
       - name: Delete version branch and verify cleanup
         shell: pwsh
         run: |
           $branch = '${{ github.event.pull_request.head.ref }}'
-          git push origin --delete $branch
+          $tag = '${{ steps.version.outputs.tag }}'
+          git push origin ":refs/heads/$branch"
+          if ($LASTEXITCODE -ne 0) { throw "Could not delete version branch: $branch" }
           git fetch --prune origin
-          $exists = git ls-remote --heads origin $branch
-          if ($exists) { throw "Version branch still exists after cleanup: $branch" }
+          $branchExists = git ls-remote --heads origin "refs/heads/$branch"
+          if ($branchExists) { throw "Version branch still exists after cleanup: $branch" }
+          $tagExists = git ls-remote --tags origin "refs/tags/$tag"
+          if (-not $tagExists) { throw "Release tag disappeared during branch cleanup: $tag" }

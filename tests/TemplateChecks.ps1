@@ -43,4 +43,18 @@ foreach ($required in @('Themes\Colors.xaml', 'Themes\Controls.xaml', 'MainWindo
     }
 }
 
+$releaseWorkflow = Get-Content (Join-Path $root '.github\workflows\release.yml') -Raw
+$releaseRequirements = @(
+    'git push origin "refs/tags/$tag:refs/tags/$tag"',
+    '--verify-tag',
+    'git ls-remote --tags origin "refs/tags/$tag"',
+    'git push origin ":refs/heads/$branch"',
+    'Release tag disappeared during branch cleanup'
+)
+foreach ($requiredFragment in $releaseRequirements) {
+    if (-not $releaseWorkflow.Contains($requiredFragment)) {
+        throw "Release workflow is missing required tag/cleanup invariant: $requiredFragment"
+    }
+}
+
 Write-Host 'HSSuite template invariants passed.'
