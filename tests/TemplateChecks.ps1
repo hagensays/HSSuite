@@ -45,7 +45,7 @@ foreach ($required in @('Themes\Colors.xaml', 'Themes\Controls.xaml', 'MainWindo
 
 $releaseWorkflow = Get-Content (Join-Path $root '.github\workflows\release.yml') -Raw
 $releaseRequirements = @(
-    'git push origin "refs/tags/$tag:refs/tags/$tag"',
+    'git push origin "refs/tags/${tag}:refs/tags/${tag}"',
     '--verify-tag',
     'git ls-remote --tags origin "refs/tags/$tag"',
     'git push origin ":refs/heads/$branch"',
@@ -55,6 +55,10 @@ foreach ($requiredFragment in $releaseRequirements) {
     if (-not $releaseWorkflow.Contains($requiredFragment)) {
         throw "Release workflow is missing required tag/cleanup invariant: $requiredFragment"
     }
+}
+
+if ($releaseWorkflow.Contains('refs/tags/$tag:refs/tags/$tag')) {
+    throw 'PowerShell tag refspec must use ${tag} before a colon to avoid scoped-variable parsing.'
 }
 
 Write-Host 'HSSuite template invariants passed.'

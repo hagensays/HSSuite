@@ -100,7 +100,7 @@ jobs:
           if ($existing) { throw "Release tag already exists: $tag" }
           git tag $tag HEAD
           if ($LASTEXITCODE -ne 0) { throw "Could not create local release tag: $tag" }
-          git push origin "refs/tags/$tag:refs/tags/$tag"
+          git push origin "refs/tags/${tag}:refs/tags/${tag}"
           if ($LASTEXITCODE -ne 0) { throw "Could not push release tag: $tag" }
           $remoteTag = git ls-remote --tags origin "refs/tags/$tag"
           if (-not $remoteTag) { throw "Release tag was not found on origin after push: $tag" }
