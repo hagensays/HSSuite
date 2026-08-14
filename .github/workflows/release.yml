@@ -55,8 +55,9 @@ jobs:
           $project = Get-ChildItem -Path src -Filter *.csproj -Recurse | Select-Object -First 1
           if (-not $project) { throw 'No application project found.' }
           $xml = [xml](Get-Content $project.FullName -Raw)
-          $assemblyName = [string]$xml.Project.PropertyGroup.AssemblyName | Where-Object { $_ } | Select-Object -First 1
-          if (-not $assemblyName) { $assemblyName = $project.BaseName }
+          $node = $xml.SelectSingleNode("//*[local-name()='AssemblyName']")
+          $assemblyName = if ($node) { $node.InnerText.Trim() } else { $project.BaseName }
+          if ([string]::IsNullOrWhiteSpace($assemblyName)) { throw 'Application name resolved to an empty value.' }
           "name=$assemblyName" >> $env:GITHUB_OUTPUT
           "project=$($project.FullName)" >> $env:GITHUB_OUTPUT
           "projectDir=$($project.DirectoryName)" >> $env:GITHUB_OUTPUT
@@ -79,10 +80,10 @@ jobs:
       - name: Prepare release assets
         shell: pwsh
         run: |
-          $name = '${{ steps.app.outputs.name }}'
+          $name = '${{ steps.app.outputs.name }}'.Trim()
           $tag = '${{ steps.version.outputs.tag }}'
           $dir = '${{ steps.app.outputs.projectDir }}'
-          $source = Join-Path $dir 'bin\Release' | Join-Path -ChildPath "$name.exe"
+          $source = Join-Path (Join-Path $dir 'bin\Release') "$name.exe"
           if (-not (Test-Path $source)) { throw "Release executable missing: $source" }
           New-Item -ItemType Directory -Path artifacts | Out-Null
           $exe = "artifacts\$name-$tag.exe"
@@ -97,7 +98,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = '${{ steps.version.outputs.tag }}'
-          $name = '${{ steps.app.outputs.name }}'
+          $name = '${{ steps.app.outputs.name }}'.Trim()
           gh release view $tag 2>$null
           if ($LASTEXITCODE -eq 0) { throw "Release $tag already exists." }
           gh release create $tag "artifacts\$name-$tag.exe" "artifacts\$name-$tag.zip" "artifacts\$name-$tag.exe.sha256" --target main --title "$name $tag" --notes "Automated HSSuite release from merged PR #${{ github.event.pull_request.number }}."
@@ -108,7 +109,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = '${{ steps.version.outputs.tag }}'
-          $name = '${{ steps.app.outputs.name }}'
+          $name = '${{ steps.app.outputs.name }}'.Trim()
           $assets = gh release view $tag --json assets --jq '.assets[].name'
           foreach ($expected in @("$name-$tag.exe", "$name-$tag.zip", "$name-$tag.exe.sha256")) {
             if ($assets -notcontains $expected) { throw "Release asset missing: $expected" }
