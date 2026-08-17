@@ -25,12 +25,13 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <Border Width="36" Height="36" CornerRadius="8"
-                        Background="{DynamicResource HsAccentBrush}"
-                        VerticalAlignment="Center">
+                <Button x:Name="SuiteHomeButton"
+                        Style="{StaticResource HsLogoButtonStyle}"
+                        VerticalAlignment="Center"
+                        Click="SuiteHomeButton_Click">
                     <TextBlock Text="HS" Foreground="White" FontWeight="Bold" FontSize="14"
                                HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </Border>
+                </Button>
 
                 <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
                     <TextBlock x:Name="AppNameTextBlock" Foreground="White" FontSize="20" FontWeight="SemiBold" />

@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Input;
 using HSTemplate.Infrastructure;
 
 namespace HSTemplate
@@ -12,6 +13,20 @@ namespace HSTemplate
             AppNameTextBlock.Text = SuiteInfo.DisplayName;
             AppDescriptionTextBlock.Text = SuiteInfo.Description;
             VersionTextBlock.Text = VersionInfo.DisplayVersion;
+
+            var suiteAvailable = SuiteLauncherService.IsAvailable;
+            SuiteHomeButton.IsHitTestVisible = suiteAvailable;
+            SuiteHomeButton.Cursor = suiteAvailable ? Cursors.Hand : Cursors.Arrow;
+            SuiteHomeButton.ToolTip = suiteAvailable ? "HSSuite öffnen" : null;
+        }
+
+        private void SuiteHomeButton_Click(object sender, RoutedEventArgs e)
+        {
+            string error;
+            if (!SuiteLauncherService.TryOpen(out error))
+            {
+                StatusTextBlock.Text = error;
+            }
         }
 
         private void PrimaryAction_Click(object sender, RoutedEventArgs e)

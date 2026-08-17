@@ -20,6 +20,16 @@ if (-not (Test-Path $projectDir)) {
     throw 'Template project folder src\HSTemplate was not found. This repo may already be initialized.'
 }
 
+$launcherProject = Join-Path $root 'src\HSSuite'
+if (Test-Path $launcherProject) {
+    Remove-Item -LiteralPath $launcherProject -Recurse -Force
+}
+
+$launcherSolution = Join-Path $root 'HSSuite.sln'
+if (Test-Path $launcherSolution) {
+    Remove-Item -LiteralPath $launcherSolution -Force
+}
+
 $textExtensions = @('.md', '.sln', '.csproj', '.xaml', '.cs', '.ps1', '.yml', '.yaml')
 $files = Get-ChildItem $root -Recurse -File | Where-Object {
     $_.FullName -notmatch '[\\/]\.git[\\/]' -and $textExtensions -contains $_.Extension
@@ -51,4 +61,5 @@ if (Test-Path $oldProjectFile) {
 
 Write-Host "Initialized HSSuite app: $AppName"
 Write-Host "Description: $Description"
+Write-Host 'Removed the repository-only HSSuite launcher project; this product remains standalone.'
 Write-Host 'Review the diff, update product-specific AGENTS.md rules, and commit only on a version branch.'

@@ -60,6 +60,8 @@ The header is the strongest family marker. Keep the same structure across tools:
 
 The header is dark; the rest of the application is predominantly light.
 
+The `[ HS ]` tile also serves as the optional suite Home button. When a sibling HSSuite launcher is available, it may use the normal accent hover/pressed feedback and open HSSuite. When no launcher is available, it remains visually identical branding with no disabled/gray treatment.
+
 ## Cards
 
 Use white surfaces on the light-gray application background. Cards should group meaningful tasks, not wrap every individual control.
@@ -70,6 +72,7 @@ Use white surfaces on the light-gray application background. Cards should group 
 - Secondary: white, subtle border, dark text.
 - Quiet: minimal/no chrome for low-priority actions.
 - Destructive: only when needed; use error color and confirmation.
+- HS logo/Home: 36 × 36 px accent tile with 8 px radius; only interactive when HSSuite is available.
 
 Prefer one primary button per immediate task context.
 
@@ -97,4 +100,4 @@ Persistent bottom strip separated by a 1 px border. Left: state/message. Right: 
 
 ## Product freedom
 
-The central workspace can vary radically. A scanner can use a table; a renamer can use a preview split view; a comparer can use two panes. Consistency comes from shell, spacing, typography, controls and state language.
+The central workspace can vary radically. A scanner can use a table; a renamer can use a preview split view; a comparer can use two panes. HSSuite itself uses launch tiles. Consistency comes from shell, spacing, typography, controls and state language.

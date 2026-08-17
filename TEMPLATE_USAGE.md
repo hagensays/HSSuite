@@ -4,7 +4,7 @@
 
 Use GitHub's template-repository feature on `HSSuite` and create a fresh repository for each application.
 
-Do **not** fork HSSuite and do not place multiple products in this repository.
+Do **not** fork HSSuite and do not combine several product implementations into one new repository.
 
 ## Bootstrap
 
@@ -14,7 +14,14 @@ After creating the new repository:
 powershell -ExecutionPolicy Bypass -File .\scripts\Initialize-App.ps1 -AppName HSFolderCompare -Description "Compare two folder trees and export differences."
 ```
 
-The script renames the solution/project folder and replaces the starter identity throughout text files. Review the resulting diff before committing.
+The script:
+
+1. removes the repository-only `src/HSSuite` launcher project and `HSSuite.sln`;
+2. renames `HSTemplate` to the requested product identity;
+3. keeps the optional `[ HS ]` → sibling HSSuite Home behavior in the generated app;
+4. leaves the product fully standalone when no launcher is present.
+
+Review the resulting diff before committing.
 
 If an AI agent is doing the work, it may perform the equivalent transformation directly instead of executing the script.
 
@@ -22,7 +29,7 @@ If an AI agent is doing the work, it may perform the equivalent transformation d
 
 1. Keep `Themes/Colors.xaml` and `Themes/Controls.xaml` as the canonical visual baseline.
 2. Replace the starter workspace inside `MainWindow.xaml` with the product UI.
-3. Keep the suite header and status bar unless there is a concrete reason not to.
+3. Keep the suite header, optional HS Home behavior and status bar unless there is a concrete reason not to.
 4. Extend the product's `AGENTS.md` with product-specific safety rules.
 5. Do not delete universal rules merely because the product does not currently exercise them.
 6. Start the first product implementation on `v0.1.0`.
@@ -34,6 +41,8 @@ If an AI agent is doing the work, it may perform the equivalent transformation d
 - ensure long-running operations do not freeze the UI
 - verify output names are non-overwriting
 - confirm CI builds the real Release EXE
+- confirm the product still starts and works when HSSuite is absent
+- if HSSuite is placed beside it, verify clicking `[ HS ]` opens the launcher
 - test on a representative Windows 10 machine before calling it production-verified
 
 ## Keeping apps visually aligned later

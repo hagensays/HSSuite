@@ -22,6 +22,15 @@ For every code change:
 12. After merge, automatically create/tag `vX.Y.Z`, build the release, create a GitHub Release, attach compiled artifacts, include short release notes, verify assets and delete the version branch.
 13. A task is not finished until `branch → change → PR → green CI → merge → release → verification → cleanup` is complete.
 
+## Repository Roles
+
+This repository intentionally has two application projects:
+
+- `src/HSTemplate` is the canonical source template copied into new product repositories.
+- `src/HSSuite` is the optional downloadable launcher/home application.
+
+The launcher is a product, not a shared library. Do not move common behavior into a runtime DLL that other HS apps must load.
+
 ## Suite Behaviour
 
 - Preserve the HSSuite visual language unless a product requirement genuinely requires an exception.
@@ -35,6 +44,17 @@ For every code change:
 - Keep changes focused on the requested task.
 - Do not claim runtime testing when only compilation or CI testing occurred.
 - If an important product/design decision is genuinely ambiguous, ask before choosing it.
+
+## Optional Launcher Contract
+
+- Every generated HS app must continue to work with no HSSuite launcher present.
+- The `[ HS ]` header tile may open a sibling `HSSuite.exe` or semantic-version release executable such as `HSSuite-v0.2.0.exe`.
+- When no launcher is present, the `[ HS ]` tile stays visually normal and must not show an error merely because HSSuite is absent.
+- HSSuite scans only its own directory for `HS*.exe`; never recurse into subfolders.
+- HSSuite must exclude itself and other HSSuite launcher variants from its app list.
+- Do not use the registry, network access, telemetry, services, IPC daemons or shared application state for launcher discovery.
+- Launch sibling apps as independent processes with their own working directory. HSSuite does not own their lifetime.
+- `scripts/Initialize-App.ps1` must remove the HSSuite launcher project/solution when converting this template repository into a product repository.
 
 ## Naming
 
