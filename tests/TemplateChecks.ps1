@@ -43,6 +43,11 @@ foreach ($required in @('Themes\Colors.xaml', 'Themes\Controls.xaml', 'MainWindo
     }
 }
 
+$controls = Get-Content (Join-Path $sourceRoot 'Themes\Controls.xaml') -Raw
+if ($controls -notmatch '<Trigger Property="TextAlignment" Value="Center">\s*<Setter Property="Padding" Value="4,0" />\s*</Trigger>') {
+    throw 'HsTextBoxStyle must reduce horizontal padding for center-aligned compact inputs.'
+}
+
 $releaseWorkflow = Get-Content (Join-Path $root '.github\workflows\release.yml') -Raw
 $releaseRequirements = @(
     'git push origin "refs/tags/${tag}:refs/tags/${tag}"',

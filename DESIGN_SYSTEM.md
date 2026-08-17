@@ -77,6 +77,10 @@ Prefer one primary button per immediate task context.
 
 Inputs use 36 px height, white background, 1 px neutral border, 6 px radius and visible blue focus border.
 
+- Standard text inputs use 10 px horizontal content padding.
+- Center-aligned compact inputs use 4 px horizontal content padding so short multi-digit values remain fully visible.
+- Centering must not cause input text to be clipped.
+
 ## Tables
 
 Keep tables flat and information-dense:
