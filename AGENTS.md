@@ -31,6 +31,18 @@ This repository intentionally has two application projects:
 
 The launcher is a product, not a shared library. Do not move common behavior into a runtime DLL that other HS apps must load.
 
+## Template ↔ Launcher Sync Check
+
+Every HSSuite change must explicitly consider whether the template and launcher need to stay aligned.
+
+- When changing `src/HSTemplate`, always evaluate whether the same universal shell, design-system or launcher-contract change also belongs in `src/HSSuite`.
+- When changing `src/HSSuite`, always evaluate whether the corresponding reusable behavior or visual rule should also be reflected in `src/HSTemplate` for future HS apps.
+- Apply shared changes to both projects in the same version branch/PR when they are genuinely universal.
+- Do not blindly mirror product-specific workspace or launcher-only behavior into the template.
+- Changes to `DESIGN_SYSTEM.md`, `SUITE_STANDARD.md`, launcher discovery/Home behavior, bootstrap logic, CI or release behavior must also trigger this sync evaluation where relevant.
+- Every PR in this repository should state the sync result: both projects updated, or one intentionally left unchanged with a short reason.
+- Existing independent product repositories are not automatically modified by this check. If a template change should later be retrofitted to an existing HS app, record or propose that follow-up rather than touching another repo unless the user requested it.
+
 ## Suite Behaviour
 
 - Preserve the HSSuite visual language unless a product requirement genuinely requires an exception.
