@@ -3,10 +3,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7A31A612-A3EF-4C2C-96CB-A9BFBB6CE173}</ProjectGuid>
+    <ProjectGuid>{0C5A3F82-0B37-4B0D-A9DB-54AE9B9B4630}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>HSTemplate</RootNamespace>
-    <AssemblyName>HSTemplate</AssemblyName>
+    <RootNamespace>HSSuite</RootNamespace>
+    <AssemblyName>HSSuite</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -61,9 +61,10 @@
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Infrastructure\OutputPathService.cs" />
-    <Compile Include="Infrastructure\SuiteLauncherService.cs" />
     <Compile Include="Infrastructure\VersionInfo.cs" />
+    <Compile Include="Models\SuiteApp.cs" />
+    <Compile Include="Services\AppDiscoveryService.cs" />
+    <Compile Include="Services\AppLaunchService.cs" />
     <Compile Include="SuiteInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

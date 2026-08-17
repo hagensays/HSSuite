@@ -4,6 +4,8 @@
 
 HSSuite is a family of small, independent Windows applications. Each application gets its own repository, executable, versioning, CI and releases. HSSuite provides source-level consistency, not a shared runtime.
 
+The optional `HSSuite.exe` launcher is a convenience home screen. It may discover and start sibling HS executables, but no product may require HSSuite to be installed or running.
+
 ## 2. Compatibility baseline
 
 - WPF desktop application
@@ -28,7 +30,19 @@ Every user-facing HS utility should normally contain:
 
 Avoid unnecessary navigation for a single-purpose utility. Add tabs/pages only when they reduce complexity.
 
-## 4. Data and output rules
+## 4. Optional suite Home
+
+The HS mark in the top-left is the suite Home affordance when a launcher is available.
+
+- Look for `HSSuite.exe` in `AppDomain.CurrentDomain.BaseDirectory`.
+- A semantic-version release executable matching `HSSuite-vX.Y.Z.exe` may be accepted as a fallback.
+- Clicking the HS mark launches HSSuite as an independent process.
+- If no launcher is present, the HS mark remains branding and the app behaves normally.
+- Do not require registry registration, installation, shared configuration, IPC or a common DLL.
+
+HSSuite itself scans only its own directory for sibling `HS*.exe` files, excludes HSSuite launcher variants, and never recurses into subfolders.
+
+## 5. Data and output rules
 
 - Default app-generated output root: `AppDomain.CurrentDomain.BaseDirectory`.
 - Never silently overwrite an existing generated file.
@@ -37,7 +51,7 @@ Avoid unnecessary navigation for a single-purpose utility. Add tabs/pages only w
 - Source data mutation rules are product-specific and must be documented in that app's `AGENTS.md`/README.
 - Prefer read-only inspection whenever mutation is not required for the app's purpose.
 
-## 5. Interaction rules
+## 6. Interaction rules
 
 - Primary action uses the suite accent button.
 - Destructive actions, where a product genuinely needs them, must be visually distinct and require appropriate confirmation.
@@ -46,17 +60,19 @@ Avoid unnecessary navigation for a single-purpose utility. Add tabs/pages only w
 - Cancellation should be supported for long operations when practical.
 - Errors should be actionable and avoid raw stack traces in the normal UI.
 
-## 6. Naming and copy
+## 7. Naming and copy
 
 - App names: short `HS` + noun/verb concept.
 - Buttons: verbs (`Scan starten`, `Exportieren`, `Vergleichen`).
 - Status text: short present-state descriptions (`Bereit`, `Scan läuft…`, `Export abgeschlossen`).
 - Avoid marketing language inside production tools.
 
-## 7. Release consistency
+## 8. Release consistency
 
 Every app uses semantic version branches and the standard PR/CI/release workflow from `AGENTS.md`. Release assets should include the EXE, a ZIP and a SHA-256 checksum.
 
-## 8. Exceptions
+The HSSuite repository releases the `src/HSSuite` launcher product while continuing to validate the separate `src/HSTemplate` project.
+
+## 9. Exceptions
 
 The template is a default, not a prison. If a product needs a different framework, storage location, dependency, window model or file mutation behavior, document the reason in that product repo rather than quietly diverging.

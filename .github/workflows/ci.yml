@@ -26,26 +26,39 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
-      - name: Build Release
+      - name: Build template Release
         shell: pwsh
         run: msbuild HSTemplate.sln /m /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
-      - name: Verify executable
+      - name: Build launcher Release when present
         shell: pwsh
         run: |
-          if (-not (Test-Path 'src/HSTemplate/bin/Release/HSTemplate.exe')) { throw 'Release EXE missing.' }
+          if (Test-Path 'HSSuite.sln') {
+            msbuild HSSuite.sln /m /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
+            if ($LASTEXITCODE -ne 0) { throw 'HSSuite launcher build failed.' }
+          }
+      - name: Verify executables
+        shell: pwsh
+        run: |
+          if (-not (Test-Path 'src/HSTemplate/bin/Release/HSTemplate.exe')) { throw 'Template Release EXE missing.' }
+          if (Test-Path 'src/HSSuite/HSSuite.csproj') {
+            if (-not (Test-Path 'src/HSSuite/bin/Release/HSSuite.exe')) { throw 'HSSuite launcher Release EXE missing.' }
+          }
       - name: Smoke-test release asset resolution
         shell: pwsh
         run: |
-          $project = Get-ChildItem -Path src -Filter *.csproj -Recurse | Select-Object -First 1
+          $launcher = Get-Item 'src/HSSuite/HSSuite.csproj' -ErrorAction SilentlyContinue
+          $project = if ($launcher) { $launcher } else { Get-ChildItem -Path src -Filter *.csproj -Recurse | Select-Object -First 1 }
           $xml = [xml](Get-Content $project.FullName -Raw)
           $node = $xml.SelectSingleNode("//*[local-name()='AssemblyName']")
           $name = if ($node) { $node.InnerText.Trim() } else { $project.BaseName }
           if ([string]::IsNullOrWhiteSpace($name)) { throw 'Resolved application name is empty.' }
           $source = Join-Path (Join-Path $project.DirectoryName 'bin\Release') "$name.exe"
           if (-not (Test-Path $source)) { throw "Release packaging cannot resolve executable: $source" }
-      - name: Upload CI build
+      - name: Upload CI builds
         uses: actions/upload-artifact@v4
         with:
-          name: HSTemplate-pr-build
-          path: src/HSTemplate/bin/Release/HSTemplate.exe
+          name: HSSuite-pr-build
+          path: |
+            src/HSTemplate/bin/Release/HSTemplate.exe
+            src/HSSuite/bin/Release/HSSuite.exe
           if-no-files-found: error

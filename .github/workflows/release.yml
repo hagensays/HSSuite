@@ -52,7 +52,8 @@ jobs:
         id: app
         shell: pwsh
         run: |
-          $project = Get-ChildItem -Path src -Filter *.csproj -Recurse | Select-Object -First 1
+          $launcher = Get-Item 'src/HSSuite/HSSuite.csproj' -ErrorAction SilentlyContinue
+          $project = if ($launcher) { $launcher } else { Get-ChildItem -Path src -Filter *.csproj -Recurse | Select-Object -First 1 }
           if (-not $project) { throw 'No application project found.' }
           $xml = [xml](Get-Content $project.FullName -Raw)
           $node = $xml.SelectSingleNode("//*[local-name()='AssemblyName']")
@@ -66,7 +67,8 @@ jobs:
         shell: pwsh
         run: |
           $numeric = '${{ steps.version.outputs.numeric }}'
-          $assemblyInfo = Get-ChildItem -Path src -Filter AssemblyInfo.cs -Recurse | Select-Object -First 1
+          $projectDir = '${{ steps.app.outputs.projectDir }}'
+          $assemblyInfo = Get-ChildItem -Path $projectDir -Filter AssemblyInfo.cs -Recurse | Select-Object -First 1
           if (-not $assemblyInfo) { throw 'AssemblyInfo.cs missing.' }
           $content = Get-Content $assemblyInfo.FullName -Raw
           $content = [regex]::Replace($content, 'AssemblyVersion\("[^"]+"\)', "AssemblyVersion(`"$numeric.0`")")
