@@ -37,4 +37,4 @@ HSSuite is deliberately **not** a monolithic application and not a shared runtim
 
 Universal suite rules belong here. Product-specific rules belong in the individual application repo. For example, HSScanner can be read-only while a future HSRenamer is allowed to rename files.
 
-See `TEMPLATE_USAGE.md` for the exact creation workflow and `docs/RETROFIT_HSSCANNER.md` for the recommended HSScanner migration path.
+See `TEMPLATE_USAGE.md` for the exact creation workflow.
